@@ -15,12 +15,15 @@ import {
   Plug,
   Shield,
   Zap,
+  UserPlus,
+  HelpCircle,
 } from 'lucide-react'
 import { useAuth } from '../context/AuthContext'
 
 const navItems = [
   { path: '/dashboard',        icon: LayoutDashboard, label: 'Dashboard'        },
   { path: '/roster',           icon: Users,           label: 'DOT Roster'       },
+  { path: '/invite',           icon: UserPlus,        label: 'Invite Drivers'   },
   { path: '/reports',          icon: FileText,        label: 'Reports'          },
   { path: '/insurance-report', icon: Shield,          label: 'Insurance Report' },
   { path: '/trends',           icon: TrendingUp,      label: 'Wellness Trends'  },
@@ -29,7 +32,8 @@ const navItems = [
   { path: '/renewals',         icon: RefreshCw,       label: 'DOT Renewals'     },
   { path: '/integrations',     icon: Plug,            label: 'Integrations'     },
   { path: '/pricing',          icon: Zap,             label: 'Plans & Pricing'  },
-  { path: '/settings',         icon: Settings,        label: 'Settings'         },
+  { path: '/account',          icon: Settings,        label: 'Account Settings' },
+  { path: '/support',          icon: HelpCircle,      label: 'Support'          },
 ]
 
 const Sidebar = () => {

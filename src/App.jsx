@@ -15,6 +15,9 @@ import DotRenewalTracker from './screens/DotRenewalTracker'
 import Integrations from './screens/Integrations'
 import InsuranceReport from './screens/InsuranceReport'
 import Pricing from './screens/Pricing'
+import InviteDrivers from './screens/InviteDrivers'
+import AccountSettings from './screens/AccountSettings'
+import Support from './screens/Support'
 
 const PrivateRoutes = () => {
   const { user } = useAuth()
@@ -34,6 +37,9 @@ const PrivateRoutes = () => {
         <Route path="/integrations"      element={<Integrations />} />
         <Route path="/insurance-report"  element={<InsuranceReport />} />
         <Route path="/pricing"           element={<Pricing />} />
+        <Route path="/invite"            element={<InviteDrivers />} />
+        <Route path="/account"           element={<AccountSettings />} />
+        <Route path="/support"           element={<Support />} />
         <Route path="*"                  element={<Navigate to="/dashboard" replace />} />
       </Routes>
     </Layout>
