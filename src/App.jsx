@@ -13,6 +13,8 @@ import EngagementAnalytics from './screens/EngagementAnalytics'
 import ActivityFeed from './screens/ActivityFeed'
 import DotRenewalTracker from './screens/DotRenewalTracker'
 import Integrations from './screens/Integrations'
+import InsuranceReport from './screens/InsuranceReport'
+import Pricing from './screens/Pricing'
 
 const PrivateRoutes = () => {
   const { user } = useAuth()
@@ -29,8 +31,10 @@ const PrivateRoutes = () => {
         <Route path="/analytics"    element={<EngagementAnalytics />} />
         <Route path="/activity"     element={<ActivityFeed />} />
         <Route path="/renewals"     element={<DotRenewalTracker />} />
-        <Route path="/integrations" element={<Integrations />} />
-        <Route path="*"             element={<Navigate to="/dashboard" replace />} />
+        <Route path="/integrations"      element={<Integrations />} />
+        <Route path="/insurance-report"  element={<InsuranceReport />} />
+        <Route path="/pricing"           element={<Pricing />} />
+        <Route path="*"                  element={<Navigate to="/dashboard" replace />} />
       </Routes>
     </Layout>
   )

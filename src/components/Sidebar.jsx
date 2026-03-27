@@ -13,19 +13,23 @@ import {
   Activity,
   RefreshCw,
   Plug,
+  Shield,
+  Zap,
 } from 'lucide-react'
 import { useAuth } from '../context/AuthContext'
 
 const navItems = [
-  { path: '/dashboard',   icon: LayoutDashboard, label: 'Dashboard'      },
-  { path: '/roster',      icon: Users,           label: 'DOT Roster'     },
-  { path: '/reports',     icon: FileText,        label: 'Reports'        },
-  { path: '/trends',      icon: TrendingUp,      label: 'Wellness Trends'},
-  { path: '/analytics',   icon: BarChart2,       label: 'Engagement'     },
-  { path: '/activity',    icon: Activity,        label: 'Activity Feed'  },
-  { path: '/renewals',    icon: RefreshCw,       label: 'DOT Renewals'   },
-  { path: '/integrations',icon: Plug,            label: 'Integrations'   },
-  { path: '/settings',    icon: Settings,        label: 'Settings'       },
+  { path: '/dashboard',        icon: LayoutDashboard, label: 'Dashboard'        },
+  { path: '/roster',           icon: Users,           label: 'DOT Roster'       },
+  { path: '/reports',          icon: FileText,        label: 'Reports'          },
+  { path: '/insurance-report', icon: Shield,          label: 'Insurance Report' },
+  { path: '/trends',           icon: TrendingUp,      label: 'Wellness Trends'  },
+  { path: '/analytics',        icon: BarChart2,       label: 'Engagement'       },
+  { path: '/activity',         icon: Activity,        label: 'Activity Feed'    },
+  { path: '/renewals',         icon: RefreshCw,       label: 'DOT Renewals'     },
+  { path: '/integrations',     icon: Plug,            label: 'Integrations'     },
+  { path: '/pricing',          icon: Zap,             label: 'Plans & Pricing'  },
+  { path: '/settings',         icon: Settings,        label: 'Settings'         },
 ]
 
 const Sidebar = () => {
