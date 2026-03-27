@@ -22,6 +22,8 @@ export const mockDrivers = [
     dotPhysicalDate: daysFromNow(192),
     lastActive: daysAgo(0),
     workoutsThisMonth: 12,
+    checkInStreak: 14,
+    trend: 'improving',
     status: "green",
     metrics: { weight: 245, systolic: 128, diastolic: 82, bloodGlucose: 98, bmi: 35.2 },
     dotHistory: [
@@ -315,3 +317,11 @@ export const getFleetStats = (drivers) => {
 
 export const getDaysUntilDot = (dateStr) =>
   Math.ceil((new Date(dateStr) - new Date()) / (1000 * 60 * 60 * 24))
+
+// Enrich drivers with trend + checkInStreak if not already set
+const TRENDS    = ['improving', 'stable', 'declining']
+const STREAKS   = [0, 3, 5, 7, 7, 10, 14, 14, 21, 0, 1, 7, 3, 12, 5]
+mockDrivers.forEach((d, i) => {
+  if (!d.trend)        d.trend = TRENDS[i % 3]
+  if (d.checkInStreak == null) d.checkInStreak = STREAKS[i] ?? 0
+})

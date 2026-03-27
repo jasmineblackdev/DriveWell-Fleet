@@ -17,11 +17,13 @@ import {
   Zap,
   UserPlus,
   HelpCircle,
+  Brain,
 } from 'lucide-react'
 import { useAuth } from '../context/AuthContext'
 
 const navItems = [
   { path: '/dashboard',        icon: LayoutDashboard, label: 'Dashboard'        },
+  { path: '/risk',             icon: Brain,           label: 'Risk Intelligence'},
   { path: '/roster',           icon: Users,           label: 'DOT Roster'       },
   { path: '/invite',           icon: UserPlus,        label: 'Invite Drivers'   },
   { path: '/reports',          icon: FileText,        label: 'Reports'          },

@@ -18,6 +18,7 @@ import Pricing from './screens/Pricing'
 import InviteDrivers from './screens/InviteDrivers'
 import AccountSettings from './screens/AccountSettings'
 import Support from './screens/Support'
+import RiskIntelligence from './screens/RiskIntelligence'
 
 const PrivateRoutes = () => {
   const { user } = useAuth()
@@ -40,6 +41,7 @@ const PrivateRoutes = () => {
         <Route path="/invite"            element={<InviteDrivers />} />
         <Route path="/account"           element={<AccountSettings />} />
         <Route path="/support"           element={<Support />} />
+        <Route path="/risk"              element={<RiskIntelligence />} />
         <Route path="*"                  element={<Navigate to="/dashboard" replace />} />
       </Routes>
     </Layout>

@@ -2,6 +2,7 @@ import React from 'react'
 import { useParams, Link } from 'react-router-dom'
 import { ArrowLeft, Activity, Calendar, Dumbbell, CheckCircle2, AlertCircle } from 'lucide-react'
 import { mockDrivers, getDaysUntilDot } from '../data/mockFleetData'
+import { scoreDriver, RISK_CONFIG, CATEGORY_LABELS } from '../utils/riskEngine'
 
 const MetricTile = ({ label, value, unit, color = '#2563eb' }) => (
   <div style={{
@@ -32,6 +33,9 @@ const DriverDetail = () => {
   }
 
   const days = getDaysUntilDot(driver.dotPhysicalDate)
+  const { riskScore, riskLevel, riskFactors } = scoreDriver(driver)
+  const riskCfg = RISK_CONFIG[riskLevel]
+
   const bpHigh = driver.metrics.systolic >= 140 || driver.metrics.diastolic >= 90
   const bmiHigh = driver.metrics.bmi >= 35
   const glucHigh = driver.metrics.bloodGlucose >= 126
@@ -52,10 +56,33 @@ const DriverDetail = () => {
           <h1 style={{ fontSize: '22px', fontWeight: '700', marginBottom: '4px' }}>{driver.name}</h1>
           <p style={{ color: '#6b7280', fontSize: '14px' }}>{driver.cdlNumber}</p>
         </div>
-        <span className={`badge badge-${driver.status}`} style={{ fontSize: '14px', padding: '6px 16px' }}>
-          {driver.status.toUpperCase()}
-        </span>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+          <div style={{ textAlign: 'center', background: riskCfg.bg, border: `1.5px solid ${riskCfg.border}`, borderRadius: '12px', padding: '10px 16px' }}>
+            <p style={{ fontSize: '28px', fontWeight: '800', color: riskCfg.color, lineHeight: 1 }}>{riskScore}</p>
+            <p style={{ fontSize: '11px', fontWeight: '600', color: riskCfg.color, marginTop: '2px' }}>{riskCfg.label}</p>
+          </div>
+        </div>
       </div>
+
+      {/* Risk Factors */}
+      {riskFactors.length > 0 && (
+        <div className="card" style={{ border: '1.5px solid #fca5a5' }}>
+          <h2 style={{ fontSize: '16px', fontWeight: '700', marginBottom: '12px', color: '#dc2626' }}>Risk Factors ({riskFactors.length})</h2>
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
+            {riskFactors.map(f => {
+              const sColor = { critical: '#dc2626', high: '#dc2626', medium: '#d97706', low: '#16a34a' }[f.severity] || '#6b7280'
+              const sBg    = { critical: '#fef2f2', high: '#fef2f2', medium: '#fffbeb', low: '#f0fdf4' }[f.severity] || '#f9fafb'
+              return (
+                <div key={f.label} style={{ background: sBg, border: `1px solid ${sColor}30`, borderRadius: '8px', padding: '8px 14px' }}>
+                  <p style={{ fontSize: '11px', color: sColor, fontWeight: '700', textTransform: 'uppercase', marginBottom: '2px' }}>{f.severity}</p>
+                  <p style={{ fontSize: '13px', color: '#374151', fontWeight: '500' }}>{f.label}</p>
+                  <p style={{ fontSize: '11px', color: '#9ca3af' }}>{CATEGORY_LABELS[f.category] || f.category}</p>
+                </div>
+              )
+            })}
+          </div>
+        </div>
+      )}
 
       {/* DOT Renewal */}
       <div className="card">
