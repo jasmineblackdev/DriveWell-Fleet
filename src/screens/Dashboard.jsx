@@ -215,7 +215,7 @@ const Dashboard = () => {
             ))}
           </div>
           <p style={{ fontSize: '11px', color: '#9ca3af' }}>
-            Based on 15% annual DOT failure rate, 40% reduction with DriveWell engagement, avg. $2,500/failure cost.
+            Based on 15% annual DOT failure rate, 40% reduction with DriveWell engagement, avg. $15,000/failure cost (recruiting + training + downtime, per ATRI research).
           </p>
         </div>
 

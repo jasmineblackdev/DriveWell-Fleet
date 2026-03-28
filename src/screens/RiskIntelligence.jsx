@@ -64,9 +64,9 @@ const RiskIntelligence = () => {
     return Object.entries(counts).sort((a, b) => b[1] - a[1])
   }, [scored])
 
-  // ROI calculator
+  // ROI calculator — $15,000/failure per ATRI research (recruiting + training + downtime)
   const roiFailures  = Math.round(roiDrivers * 0.15 * (roiReduction / 100))
-  const roiSavings   = roiFailures * 2500
+  const roiSavings   = roiFailures * 15000
   const roiCost      = roiDrivers * roiPlan * 12
   const roiNet       = roiSavings - roiCost
   const roiPct       = roiCost > 0 ? Math.round((roiNet / roiCost) * 100) : 0
@@ -167,7 +167,7 @@ const RiskIntelligence = () => {
               ))}
             </div>
             <p style={{ fontSize: '11px', color: '#818cf8', marginTop: '14px' }}>
-              Based on 15% annual failure rate × {roiReduction}% reduction × $2,500/failure.
+              Based on 15% annual failure rate × {roiReduction}% reduction × $15,000/failure (ATRI industry avg: recruiting + training + downtime).
             </p>
           </div>
 
@@ -236,6 +236,36 @@ const RiskIntelligence = () => {
             )}
           </div>
         </div>
+      </div>
+
+      {/* Score Methodology */}
+      <div className="card" style={{ marginTop: '8px', background: '#f8fafc', border: '1px solid #e2e8f0' }}>
+        <h2 style={{ fontSize: '16px', fontWeight: '700', marginBottom: '12px' }}>Score Methodology</h2>
+        <p style={{ fontSize: '13px', color: '#6b7280', lineHeight: '1.6', marginBottom: '14px' }}>
+          DriveWell's Risk Score is derived from each driver's DOT Readiness Score, which maps directly to the medical standards
+          set forth in <strong>FMCSA 49 CFR §391.41</strong> (Physical Qualifications for Drivers). Five clinically grounded categories
+          are weighted by their relative impact on DOT disqualification outcomes:
+        </p>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))', gap: '10px', marginBottom: '14px' }}>
+          {[
+            { cat: 'Blood Pressure',  weight: '30 pts', note: '§391.41(b)(6)' },
+            { cat: 'Blood Glucose',   weight: '20 pts', note: '§391.41(b)(3)' },
+            { cat: 'BMI / Weight',    weight: '20 pts', note: 'Sleep apnea screening' },
+            { cat: 'Heart Rate',      weight: '15 pts', note: '§391.41(b)(4)' },
+            { cat: 'Habits & Sleep',  weight: '15 pts', note: 'HOS & lifestyle factors' },
+          ].map(m => (
+            <div key={m.cat} style={{ padding: '12px', background: 'white', borderRadius: '8px', border: '1px solid #e5e7eb' }}>
+              <p style={{ fontWeight: '700', fontSize: '13px', marginBottom: '2px' }}>{m.cat}</p>
+              <p style={{ fontSize: '20px', fontWeight: '800', color: '#2563eb', lineHeight: 1, marginBottom: '4px' }}>{m.weight}</p>
+              <p style={{ fontSize: '11px', color: '#9ca3af' }}>{m.note}</p>
+            </div>
+          ))}
+        </div>
+        <p style={{ fontSize: '12px', color: '#9ca3af', lineHeight: '1.5' }}>
+          Fleet risk scores are aggregated from individual driver DOT Readiness Scores. High Risk = score &lt;50,
+          Elevated = 50–69, Low Risk = 70+. Methodology reviewed against published FMCSA medical advisory criteria.
+          DriveWell does not provide medical diagnoses or replace a certified DOT medical examiner.
+        </p>
       </div>
     </div>
   )

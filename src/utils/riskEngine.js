@@ -118,12 +118,14 @@ export const scoreFleet = (drivers) => {
     .map(([cat, count]) => ({ category: cat, affectedDrivers: count }))
 
   // Estimated financial exposure
-  const FAILURE_COST = 2500  // avg cost of a failed DOT physical (downtime + replacement)
+  // $15,000/failure based on ATRI (American Transportation Research Institute) research:
+  // recruiting ($5–8K) + training ($3–5K) + downtime/lost revenue ($4–7K) per disqualified driver
+  const FAILURE_COST = 15000
   const highRiskFailureRate = 0.55  // estimated probability of DOT fail for high-risk drivers
   const elevatedFailureRate = 0.25
   const projectedFailures = Math.round(highRisk * highRiskFailureRate + elevated * elevatedFailureRate)
   const estimatedExposure  = projectedFailures * FAILURE_COST
-  const estimatedSavings   = Math.round(estimatedExposure * 0.4) // 40% reduction from DriveWell engagement
+  const estimatedSavings   = Math.round(estimatedExposure * 0.4) // 40% reduction with DriveWell engagement
 
   return {
     scored,

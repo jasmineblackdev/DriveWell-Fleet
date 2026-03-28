@@ -1,6 +1,7 @@
 import React, { useState } from 'react'
 import { FileText, Download, Shield, TrendingUp, AlertTriangle, CheckCircle2, Printer } from 'lucide-react'
 import { mockDrivers, getFleetStats, getDaysUntilDot } from '../data/mockFleetData'
+import { useAuth } from '../context/AuthContext'
 
 const today = new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })
 const quarter = `Q${Math.ceil((new Date().getMonth() + 1) / 3)} ${new Date().getFullYear()}`
@@ -50,6 +51,8 @@ const RiskRow = ({ driver }) => {
 }
 
 const InsuranceReport = () => {
+  const { user } = useAuth()
+  const companyName = user?.companyName || user?.company || 'Your Fleet'
   const [generated, setGenerated] = useState(false)
   const stats = getFleetStats(mockDrivers)
   const dotReadyPct = Math.round((stats.green / stats.total) * 100)
@@ -139,7 +142,7 @@ const InsuranceReport = () => {
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '12px' }}>
               <div>
                 <p style={{ fontSize: '12px', opacity: 0.7, marginBottom: '4px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Fleet Wellness Compliance Report</p>
-                <h2 style={{ fontSize: '22px', fontWeight: '700', marginBottom: '4px' }}>FleetCo Logistics</h2>
+                <h2 style={{ fontSize: '22px', fontWeight: '700', marginBottom: '4px' }}>{companyName}</h2>
                 <p style={{ fontSize: '14px', opacity: 0.85 }}>Report Period: {quarter}</p>
                 <p style={{ fontSize: '13px', opacity: 0.7 }}>Generated: {today}</p>
               </div>

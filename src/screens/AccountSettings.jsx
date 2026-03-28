@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-import { Building2, CreditCard, Bell, Shield, Save, ChevronRight } from 'lucide-react'
+import { Building2, CreditCard, Bell, Shield, Save, ChevronRight, Lock, FileText, CheckCircle2 } from 'lucide-react'
 import { useAuth } from '../context/AuthContext'
 
 const Section = ({ title, icon, children }) => (
@@ -144,6 +144,54 @@ const AccountSettings = () => {
           { label: 'Change Password',        note: 'Last changed 30+ days ago' },
           { label: 'Two-Factor Authentication', note: 'Currently disabled — recommended' },
           { label: 'Active Sessions',        note: 'Manage logged-in devices' },
+        ].map(item => (
+          <div key={item.label} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '14px 0', borderBottom: '1px solid #f3f4f6', cursor: 'pointer' }}>
+            <div>
+              <p style={{ fontWeight: '500', fontSize: '15px' }}>{item.label}</p>
+              <p style={{ fontSize: '13px', color: '#6b7280', marginTop: '2px' }}>{item.note}</p>
+            </div>
+            <ChevronRight size={18} color="#9ca3af" />
+          </div>
+        ))}
+      </Section>
+
+      {/* HIPAA & Compliance */}
+      <Section title="HIPAA & Data Compliance" icon={<Lock size={18} color="#7c3aed" />}>
+        {/* Compliance badges */}
+        <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap', marginBottom: '20px' }}>
+          {[
+            { label: 'HIPAA Compliant',        color: '#7c3aed', bg: '#f5f3ff' },
+            { label: 'AES-256 Encrypted',      color: '#0369a1', bg: '#f0f9ff' },
+            { label: 'SOC 2 Type II (pending)', color: '#6b7280', bg: '#f9fafb' },
+            { label: 'TLS 1.3 in Transit',     color: '#0369a1', bg: '#f0f9ff' },
+          ].map(b => (
+            <div key={b.label} style={{ display: 'flex', alignItems: 'center', gap: '6px', padding: '6px 12px', background: b.bg, borderRadius: '8px', fontSize: '12px', fontWeight: '600', color: b.color }}>
+              <CheckCircle2 size={13} /> {b.label}
+            </div>
+          ))}
+        </div>
+
+        {/* BAA section */}
+        <div style={{ padding: '16px', background: '#faf5ff', border: '1px solid #e9d5ff', borderRadius: '10px', marginBottom: '16px' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+            <div style={{ flex: 1 }}>
+              <p style={{ fontWeight: '700', fontSize: '15px', color: '#6d28d9', marginBottom: '4px' }}>Business Associate Agreement (BAA)</p>
+              <p style={{ fontSize: '13px', color: '#7c3aed', lineHeight: '1.5' }}>
+                As a HIPAA Business Associate, DriveWell signs a BAA with fleet accounts that handle protected health information (PHI). Required for fleets with employer-sponsored health plans or insurance integrations.
+              </p>
+            </div>
+          </div>
+          <button style={{ marginTop: '12px', display: 'flex', alignItems: 'center', gap: '6px', padding: '8px 16px', background: '#7c3aed', color: 'white', border: 'none', borderRadius: '8px', fontSize: '13px', fontWeight: '600', cursor: 'pointer' }}>
+            <FileText size={14} /> Request BAA
+          </button>
+        </div>
+
+        {/* Data practices */}
+        {[
+          { label: 'Driver Health Data Access',   note: 'Fleet admins see aggregate scores only — individual health metrics are private to each driver' },
+          { label: 'Data Retention Policy',       note: 'Health records retained for 7 years per FMCSA 49 CFR §391.51; deleted on written request' },
+          { label: 'Subprocessor List',           note: 'AWS (hosting), Twilio (notifications), Stripe (billing) — all sign DPAs' },
+          { label: 'Download Privacy Policy',     note: 'Full HIPAA-aligned privacy policy and terms of service' },
         ].map(item => (
           <div key={item.label} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '14px 0', borderBottom: '1px solid #f3f4f6', cursor: 'pointer' }}>
             <div>
