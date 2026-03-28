@@ -23,11 +23,13 @@ const Reports = () => {
   const [exporting, setExporting] = useState(false)
   const stats = getFleetStats(mockDrivers)
 
-  const handleExport = async () => {
+  const handleExport = () => {
     setExporting(true)
-    await new Promise(r => setTimeout(r, 1200))
-    setExporting(false)
-    alert('PDF export is a placeholder in this demo. In production this would generate a real PDF report.')
+    // Give the browser a tick to re-render, then trigger print dialog (Save as PDF)
+    setTimeout(() => {
+      window.print()
+      setExporting(false)
+    }, 100)
   }
 
   const dotReadyRate = Math.round((stats.green / stats.total) * 100)

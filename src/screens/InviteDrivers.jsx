@@ -1,5 +1,6 @@
-import React, { useState } from 'react'
-import { UserPlus, Mail, Copy, CheckCircle, Clock, X } from 'lucide-react'
+import React, { useState, useRef } from 'react'
+import { UserPlus, Mail, Copy, CheckCircle, Clock, X, Upload, AlertCircle } from 'lucide-react'
+import { useAuth } from '../context/AuthContext'
 
 const STORAGE_KEY = 'dw_fleet_invitations'
 
@@ -8,35 +9,58 @@ const loadInvitations = () => {
 }
 
 const InviteDrivers = () => {
+  const { token } = useAuth()
   const [invitations, setInvitations] = useState(loadInvitations)
-  const [email, setEmail]   = useState('')
-  const [sending, setSending] = useState(false)
-  const [copied, setCopied]   = useState(null)
-  const [error, setError]     = useState('')
+  const [email,       setEmail]       = useState('')
+  const [sending,     setSending]     = useState(false)
+  const [copied,      setCopied]      = useState(null)
+  const [error,       setError]       = useState('')
+  const [csvStatus,   setCsvStatus]   = useState(null) // null | 'parsing' | { sent, failed, errors }
+  const csvRef = useRef()
 
   const isValidEmail = e => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(e)
 
-  const send = () => {
+  const callApi = async (emailAddr) => {
+    const API = import.meta.env.VITE_API_URL || ''
+    if (!API || !token) return null
+    try {
+      const res = await fetch(`${API}/fleet/invite`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+        body: JSON.stringify({ email: emailAddr }),
+      })
+      if (!res.ok) return null
+      return await res.json()
+    } catch { return null }
+  }
+
+  const saveLocal = (inv, current) => {
+    const next = [inv, ...current]
+    setInvitations(next)
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(next))
+    return next
+  }
+
+  const send = async () => {
     setError('')
     if (!isValidEmail(email)) { setError('Please enter a valid email address'); return }
-    if (invitations.find(i => i.email === email.toLowerCase())) { setError('This driver has already been invited'); return }
+    if (invitations.find(i => i.email === email.toLowerCase())) {
+      setError('This driver has already been invited'); return
+    }
 
     setSending(true)
-    setTimeout(() => {
-      const inv = {
-        id:        Date.now(),
-        email:     email.toLowerCase(),
-        status:    'pending',
-        sentAt:    new Date().toISOString(),
-        expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(),
-        token:     Math.random().toString(36).slice(2),
-      }
-      const next = [inv, ...invitations]
-      setInvitations(next)
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(next))
-      setEmail('')
-      setSending(false)
-    }, 800)
+    const apiData = await callApi(email.toLowerCase())
+    const inv = {
+      id:        Date.now(),
+      email:     email.toLowerCase(),
+      status:    'pending',
+      sentAt:    new Date().toISOString(),
+      expiresAt: apiData?.expiresAt || new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(),
+      token:     apiData?.inviteToken || Math.random().toString(36).slice(2),
+    }
+    saveLocal(inv, invitations)
+    setEmail('')
+    setSending(false)
   }
 
   const revoke = (id) => {
@@ -50,6 +74,50 @@ const InviteDrivers = () => {
     navigator.clipboard.writeText(link).catch(() => {})
     setCopied(inv.id)
     setTimeout(() => setCopied(null), 2000)
+  }
+
+  const handleCsvUpload = async (e) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+    e.target.value = ''
+    setCsvStatus('parsing')
+
+    const text = await file.text()
+    // Parse: accept CSV, TSV, or newline-delimited; skip header row if it contains "email"
+    const lines = text.split(/[\r\n,;\t]+/).map(s => s.trim().toLowerCase()).filter(Boolean)
+    const emails = lines.filter(s => isValidEmail(s) && !s.startsWith('email'))
+
+    if (emails.length === 0) {
+      setCsvStatus({ sent: 0, failed: 0, errors: ['No valid email addresses found in file.'] })
+      return
+    }
+
+    let sent = 0, failed = 0
+    const errors = []
+    let current = [...invitations]
+
+    for (const addr of emails) {
+      if (current.find(i => i.email === addr)) {
+        errors.push(`${addr} — already invited`)
+        failed++
+        continue
+      }
+      const apiData = await callApi(addr)
+      const inv = {
+        id:        Date.now() + Math.random(),
+        email:     addr,
+        status:    'pending',
+        sentAt:    new Date().toISOString(),
+        expiresAt: apiData?.expiresAt || new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(),
+        token:     apiData?.inviteToken || Math.random().toString(36).slice(2),
+      }
+      current = [inv, ...current]
+      sent++
+    }
+
+    setInvitations(current)
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(current))
+    setCsvStatus({ sent, failed, errors })
   }
 
   const pending  = invitations.filter(i => i.status === 'pending')
@@ -82,20 +150,74 @@ const InviteDrivers = () => {
           <button
             onClick={send}
             disabled={sending || !email}
-            style={{ padding: '11px 20px', background: '#2563eb', color: 'white', border: 'none', borderRadius: '8px', fontWeight: '600', cursor: 'pointer', whiteSpace: 'nowrap', display: 'flex', alignItems: 'center', gap: '8px' }}
+            style={{ padding: '11px 20px', background: '#2563eb', color: 'white', border: 'none', borderRadius: '8px', fontWeight: '600', cursor: 'pointer', whiteSpace: 'nowrap', display: 'flex', alignItems: 'center', gap: '8px', opacity: !email ? 0.5 : 1 }}
           >
             <Mail size={16} />
             {sending ? 'Sending…' : 'Send Invite'}
           </button>
         </div>
         <p style={{ fontSize: '13px', color: '#6b7280', marginTop: '12px' }}>
-          Drivers will receive an email with a link to create their account and join your fleet. Invitations expire after 7 days.
+          Drivers will receive an email with a link to download DriveWell and join your fleet. Invitations expire after 7 days.
         </p>
       </div>
 
-      {/* Bulk invite hint */}
-      <div style={{ background: '#eff6ff', border: '1px solid #bfdbfe', borderRadius: '10px', padding: '16px', marginBottom: '24px', fontSize: '14px', color: '#1e40af' }}>
-        <strong>Tip:</strong> Need to invite many drivers at once? Contact our support team for a CSV bulk-import option.
+      {/* CSV Bulk Import */}
+      <div className="card" style={{ marginBottom: '24px' }}>
+        <h2 style={{ fontWeight: '700', fontSize: '16px', marginBottom: '10px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+          <Upload size={18} color="#2563eb" /> Bulk Import via CSV
+        </h2>
+        <p style={{ fontSize: '14px', color: '#6b7280', marginBottom: '14px' }}>
+          Upload a CSV file with one email per row (or a column labeled "email") to invite multiple drivers at once.
+        </p>
+
+        <input
+          ref={csvRef}
+          type="file"
+          accept=".csv,.txt"
+          style={{ display: 'none' }}
+          onChange={handleCsvUpload}
+        />
+
+        {csvStatus === 'parsing' ? (
+          <p style={{ fontSize: '14px', color: '#6b7280' }}>Processing file…</p>
+        ) : csvStatus ? (
+          <div>
+            <div style={{ display: 'flex', gap: '12px', marginBottom: '10px', flexWrap: 'wrap' }}>
+              <span style={{ background: '#dcfce7', color: '#15803d', padding: '4px 12px', borderRadius: '999px', fontSize: '13px', fontWeight: '600' }}>
+                {csvStatus.sent} invited
+              </span>
+              {csvStatus.failed > 0 && (
+                <span style={{ background: '#fef2f2', color: '#dc2626', padding: '4px 12px', borderRadius: '999px', fontSize: '13px', fontWeight: '600' }}>
+                  {csvStatus.failed} skipped
+                </span>
+              )}
+            </div>
+            {csvStatus.errors.length > 0 && (
+              <div style={{ background: '#fef9c3', borderRadius: '8px', padding: '10px 14px', marginBottom: '10px' }}>
+                {csvStatus.errors.slice(0, 5).map((e, i) => (
+                  <p key={i} style={{ fontSize: '12px', color: '#92400e', marginBottom: '2px' }}>{e}</p>
+                ))}
+                {csvStatus.errors.length > 5 && (
+                  <p style={{ fontSize: '12px', color: '#92400e' }}>…and {csvStatus.errors.length - 5} more</p>
+                )}
+              </div>
+            )}
+            <button
+              onClick={() => { setCsvStatus(null); csvRef.current?.click() }}
+              style={{ padding: '8px 16px', background: '#f9fafb', border: '1px solid #e5e7eb', borderRadius: '8px', fontSize: '13px', cursor: 'pointer' }}
+            >
+              Upload another file
+            </button>
+          </div>
+        ) : (
+          <button
+            onClick={() => csvRef.current?.click()}
+            style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '10px 18px', border: '1.5px dashed #d1d5db', borderRadius: '8px', background: '#f9fafb', color: '#374151', fontSize: '14px', fontWeight: '500', cursor: 'pointer' }}
+          >
+            <Upload size={16} color="#6b7280" />
+            Choose CSV file
+          </button>
+        )}
       </div>
 
       {/* Pending invitations */}
@@ -111,7 +233,7 @@ const InviteDrivers = () => {
                 <div>
                   <p style={{ fontWeight: '500', fontSize: '15px' }}>{inv.email}</p>
                   <p style={{ fontSize: '12px', color: '#6b7280', marginTop: '2px' }}>
-                    Sent {new Date(inv.sentAt).toLocaleDateString()} · Expires in {daysLeft} days
+                    Sent {new Date(inv.sentAt).toLocaleDateString()} · {daysLeft > 0 ? `Expires in ${daysLeft} days` : 'Expired'}
                   </p>
                 </div>
                 <div style={{ display: 'flex', gap: '8px' }}>
@@ -152,7 +274,7 @@ const InviteDrivers = () => {
         <div className="card" style={{ textAlign: 'center', padding: '48px 24px', color: '#6b7280' }}>
           <UserPlus size={40} style={{ margin: '0 auto 16px', opacity: 0.3 }} />
           <p style={{ fontWeight: '500' }}>No invitations sent yet</p>
-          <p style={{ fontSize: '14px', marginTop: '4px' }}>Enter a driver's email above to get started.</p>
+          <p style={{ fontSize: '14px', marginTop: '4px' }}>Enter a driver's email above or upload a CSV to get started.</p>
         </div>
       )}
     </div>

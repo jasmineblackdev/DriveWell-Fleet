@@ -67,6 +67,25 @@ const DriverRow = ({ driver }) => {
   )
 }
 
+const exportCsv = () => {
+  const rows = [
+    ['Name', 'CDL Number', 'DOT Physical Date', 'Days Remaining', 'Status'],
+    ...mockDrivers.map(d => {
+      const days = getDaysUntilDot(d.dotPhysicalDate)
+      const status = days < 0 ? 'OVERDUE' : days <= 30 ? 'Due Soon' : days <= 90 ? 'Due in 90 Days' : 'Current'
+      return [d.name, d.cdlNumber, new Date(d.dotPhysicalDate).toLocaleDateString(), days, status]
+    })
+  ]
+  const csv = rows.map(r => r.map(v => `"${String(v).replace(/"/g, '""')}"`).join(',')).join('\n')
+  const blob = new Blob([csv], { type: 'text/csv' })
+  const url  = URL.createObjectURL(blob)
+  const a    = document.createElement('a')
+  a.href     = url
+  a.download = `dot-renewals-${new Date().toISOString().slice(0, 10)}.csv`
+  a.click()
+  URL.revokeObjectURL(url)
+}
+
 const DotRenewalTracker = () => {
   return (
     <div>
@@ -78,7 +97,7 @@ const DotRenewalTracker = () => {
         <button
           className="btn-secondary"
           style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '14px' }}
-          onClick={() => alert('CSV export coming soon — this would download a spreadsheet of all driver DOT dates.')}
+          onClick={exportCsv}
         >
           <Download size={15} />
           Export CSV

@@ -1,27 +1,26 @@
 import React, { useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, Link } from 'react-router-dom'
 import { Truck, Eye, EyeOff, AlertCircle } from 'lucide-react'
 import { useAuth } from '../context/AuthContext'
 
 const Login = () => {
   const { login } = useAuth()
-  const navigate = useNavigate()
-  const [email, setEmail]       = useState('')
+  const navigate  = useNavigate()
+  const [email,    setEmail]    = useState('')
   const [password, setPassword] = useState('')
-  const [showPw, setShowPw]     = useState(false)
-  const [error, setError]       = useState('')
-  const [loading, setLoading]   = useState(false)
+  const [showPw,   setShowPw]   = useState(false)
+  const [error,    setError]    = useState('')
+  const [loading,  setLoading]  = useState(false)
 
   const handleSubmit = async (e) => {
     e.preventDefault()
     setError('')
     setLoading(true)
-    await new Promise(r => setTimeout(r, 400)) // simulate latency
-    const ok = login(email, password)
-    if (ok) {
+    const result = await login(email, password)
+    if (result.ok) {
       navigate('/dashboard')
     } else {
-      setError('Invalid email or password. Try admin@fleetco.com / demo1234')
+      setError(result.error)
     }
     setLoading(false)
   }
@@ -85,10 +84,11 @@ const Login = () => {
             />
           </div>
 
-          <div style={{ marginBottom: '24px' }}>
-            <label style={{ display: 'block', fontSize: '14px', fontWeight: '500', marginBottom: '6px' }}>
-              Password
-            </label>
+          <div style={{ marginBottom: '20px' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' }}>
+              <label style={{ fontSize: '14px', fontWeight: '500' }}>Password</label>
+              <Link to="/forgot-password" style={{ fontSize: '13px', color: '#2563eb' }}>Forgot password?</Link>
+            </div>
             <div style={{ position: 'relative' }}>
               <input
                 type={showPw ? 'text' : 'password'}
@@ -120,7 +120,12 @@ const Login = () => {
           </button>
         </form>
 
-        <p style={{ textAlign: 'center', fontSize: '12px', color: '#9ca3af', marginTop: '20px' }}>
+        <p style={{ textAlign: 'center', fontSize: '13px', color: '#6b7280', marginTop: '20px' }}>
+          Don't have an account?{' '}
+          <Link to="/register" style={{ color: '#2563eb', fontWeight: '600' }}>Create one free</Link>
+        </p>
+
+        <p style={{ textAlign: 'center', fontSize: '11px', color: '#9ca3af', marginTop: '8px' }}>
           Demo: admin@fleetco.com / demo1234
         </p>
 

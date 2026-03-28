@@ -77,6 +77,7 @@ const InsuranceReport = () => {
               <Printer size={16} /> Print
             </button>
             <button
+              onClick={handlePrint}
               style={{ display: 'flex', alignItems: 'center', gap: '6px', padding: '9px 16px', background: '#2563eb', color: 'white', border: 'none', borderRadius: '8px', cursor: 'pointer', fontSize: '14px', fontWeight: '600' }}
             >
               <Download size={16} /> Export PDF

@@ -1,8 +1,9 @@
 import React, { useState, useMemo } from 'react'
 import { Link } from 'react-router-dom'
-import { Search, ChevronUp, ChevronDown, TrendingUp, TrendingDown, Minus } from 'lucide-react'
+import { Search, ChevronUp, ChevronDown, TrendingUp, TrendingDown, Minus, UserMinus } from 'lucide-react'
 import { mockDrivers, getDaysUntilDot } from '../data/mockFleetData'
 import { scoreFleet, RISK_CONFIG, CATEGORY_LABELS } from '../utils/riskEngine'
+import { useAuth } from '../context/AuthContext'
 
 const TrendIcon = ({ trend }) => {
   if (trend === 'improving') return <TrendingUp size={14} color="#16a34a" />
@@ -11,6 +12,7 @@ const TrendIcon = ({ trend }) => {
 }
 
 const DotRoster = () => {
+  const { token } = useAuth()
   const { scored } = useMemo(() => scoreFleet(mockDrivers), [])
 
   const [search,       setSearch]       = useState('')
@@ -18,6 +20,30 @@ const DotRoster = () => {
   const [sortKey,      setSortKey]      = useState('riskScore')
   const [sortAsc,      setSortAsc]      = useState(false)
   const [expandedId,   setExpandedId]   = useState(null)
+  const [removedIds,   setRemovedIds]   = useState(new Set())
+  const [confirmId,    setConfirmId]    = useState(null)
+  const [removing,     setRemoving]     = useState(false)
+
+  const handleRemove = async (driverId, driverName) => {
+    if (confirmId !== driverId) {
+      setConfirmId(driverId)
+      return
+    }
+    setRemoving(true)
+    const API = import.meta.env.VITE_API_URL || ''
+    if (API && token) {
+      try {
+        await fetch(`${API}/fleet/drivers/${driverId}`, {
+          method: 'DELETE',
+          headers: { Authorization: `Bearer ${token}` },
+        })
+      } catch { /* offline — remove from UI anyway */ }
+    }
+    setRemovedIds(prev => new Set([...prev, driverId]))
+    setConfirmId(null)
+    setExpandedId(null)
+    setRemoving(false)
+  }
 
   const SORT_KEYS = {
     name:      (d) => d.name,
@@ -28,7 +54,7 @@ const DotRoster = () => {
   }
 
   const filtered = useMemo(() => {
-    let list = [...scored]
+    let list = scored.filter(d => !removedIds.has(d.id))
 
     if (search) {
       const q = search.toLowerCase()
@@ -48,7 +74,7 @@ const DotRoster = () => {
     })
 
     return list
-  }, [scored, search, riskFilter, sortKey, sortAsc])
+  }, [scored, removedIds, search, riskFilter, sortKey, sortAsc])
 
   const handleSort = (key) => {
     if (sortKey === key) setSortAsc(a => !a)
@@ -219,23 +245,54 @@ const DotRoster = () => {
                       </td>
                     </tr>
 
-                    {/* Expanded risk factor detail */}
-                    {isExpanded && driver.riskFactors.length > 0 && (
+                    {/* Expanded risk factor detail + actions */}
+                    {isExpanded && (
                       <tr>
                         <td colSpan={10} style={{ background: '#fafafa', padding: '12px 16px', borderBottom: '1px solid #f3f4f6' }}>
-                          <p style={{ fontSize: '12px', fontWeight: '600', color: '#6b7280', marginBottom: '8px', textTransform: 'uppercase', letterSpacing: '0.04em' }}>All Risk Factors</p>
-                          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
-                            {driver.riskFactors.map(f => {
-                              const sColor = { critical: '#dc2626', high: '#dc2626', medium: '#d97706', low: '#16a34a' }[f.severity] || '#6b7280'
-                              const sBg    = { critical: '#fef2f2', high: '#fef2f2', medium: '#fffbeb', low: '#f0fdf4' }[f.severity] || '#f9fafb'
-                              return (
-                                <div key={f.label} style={{ background: sBg, border: `1px solid ${sColor}30`, borderRadius: '8px', padding: '6px 12px', fontSize: '13px' }}>
-                                  <span style={{ color: sColor, fontWeight: '600', textTransform: 'capitalize', fontSize: '11px' }}>{f.severity} · </span>
-                                  <span style={{ color: '#374151' }}>{f.label}</span>
-                                  <span style={{ color: '#9ca3af', fontSize: '11px', marginLeft: '6px' }}>({CATEGORY_LABELS[f.category] || f.category})</span>
-                                </div>
-                              )
-                            })}
+                          {driver.riskFactors.length > 0 && (
+                            <>
+                              <p style={{ fontSize: '12px', fontWeight: '600', color: '#6b7280', marginBottom: '8px', textTransform: 'uppercase', letterSpacing: '0.04em' }}>All Risk Factors</p>
+                              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', marginBottom: '14px' }}>
+                                {driver.riskFactors.map(f => {
+                                  const sColor = { critical: '#dc2626', high: '#dc2626', medium: '#d97706', low: '#16a34a' }[f.severity] || '#6b7280'
+                                  const sBg    = { critical: '#fef2f2', high: '#fef2f2', medium: '#fffbeb', low: '#f0fdf4' }[f.severity] || '#f9fafb'
+                                  return (
+                                    <div key={f.label} style={{ background: sBg, border: `1px solid ${sColor}30`, borderRadius: '8px', padding: '6px 12px', fontSize: '13px' }}>
+                                      <span style={{ color: sColor, fontWeight: '600', textTransform: 'capitalize', fontSize: '11px' }}>{f.severity} · </span>
+                                      <span style={{ color: '#374151' }}>{f.label}</span>
+                                      <span style={{ color: '#9ca3af', fontSize: '11px', marginLeft: '6px' }}>({CATEGORY_LABELS[f.category] || f.category})</span>
+                                    </div>
+                                  )
+                                })}
+                              </div>
+                            </>
+                          )}
+                          <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
+                            {confirmId === driver.id ? (
+                              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                <span style={{ fontSize: '13px', color: '#dc2626' }}>Remove {driver.name} from fleet?</span>
+                                <button
+                                  onClick={(e) => { e.stopPropagation(); handleRemove(driver.id, driver.name) }}
+                                  disabled={removing}
+                                  style={{ padding: '6px 14px', background: '#dc2626', color: 'white', border: 'none', borderRadius: '6px', fontSize: '13px', fontWeight: '600', cursor: 'pointer' }}
+                                >
+                                  {removing ? 'Removing…' : 'Confirm'}
+                                </button>
+                                <button
+                                  onClick={(e) => { e.stopPropagation(); setConfirmId(null) }}
+                                  style={{ padding: '6px 14px', background: 'white', color: '#374151', border: '1px solid #e5e7eb', borderRadius: '6px', fontSize: '13px', cursor: 'pointer' }}
+                                >
+                                  Cancel
+                                </button>
+                              </div>
+                            ) : (
+                              <button
+                                onClick={(e) => { e.stopPropagation(); handleRemove(driver.id, driver.name) }}
+                                style={{ display: 'flex', alignItems: 'center', gap: '6px', padding: '6px 14px', background: 'white', color: '#dc2626', border: '1px solid #fca5a5', borderRadius: '6px', fontSize: '13px', fontWeight: '500', cursor: 'pointer' }}
+                              >
+                                <UserMinus size={14} /> Remove from Fleet
+                              </button>
+                            )}
                           </div>
                         </td>
                       </tr>

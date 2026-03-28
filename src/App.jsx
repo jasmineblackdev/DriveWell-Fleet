@@ -3,6 +3,9 @@ import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-d
 import { AuthProvider, useAuth } from './context/AuthContext'
 import Layout from './components/Layout'
 import Login from './screens/Login'
+import Register from './screens/Register'
+import ForgotPassword from './screens/ForgotPassword'
+import FleetOnboarding from './screens/FleetOnboarding'
 import Dashboard from './screens/Dashboard'
 import DotRoster from './screens/DotRoster'
 import DriverDetail from './screens/DriverDetail'
@@ -53,8 +56,11 @@ function App() {
     <AuthProvider>
       <Router>
         <Routes>
-          <Route path="/login" element={<Login />} />
-          <Route path="/*"     element={<PrivateRoutes />} />
+          <Route path="/login"           element={<Login />} />
+          <Route path="/register"        element={<Register />} />
+          <Route path="/forgot-password" element={<ForgotPassword />} />
+          <Route path="/onboarding"      element={<FleetOnboarding />} />
+          <Route path="/*"               element={<PrivateRoutes />} />
         </Routes>
       </Router>
     </AuthProvider>
