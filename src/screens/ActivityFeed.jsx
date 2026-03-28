@@ -84,7 +84,24 @@ const ActivityFeed = () => {
                   <Icon size={16} color={cfg.color} />
                 </div>
                 <div style={{ flex: 1, minWidth: 0 }}>
-                  <p style={{ fontSize: '14px', color: '#374151', marginBottom: '2px' }}>{event.text}</p>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '2px', flexWrap: 'wrap' }}>
+                    <p style={{ fontSize: '14px', color: '#374151' }}>{event.text}</p>
+                    {event.type === 'alert' && (
+                      <span style={{ padding: '1px 7px', borderRadius: '999px', fontSize: '10px', fontWeight: '700', background: '#fef2f2', color: '#dc2626', flexShrink: 0 }}>
+                        CRITICAL
+                      </span>
+                    )}
+                    {event.type === 'dot' && (
+                      <span style={{ padding: '1px 7px', borderRadius: '999px', fontSize: '10px', fontWeight: '700', background: '#fef9c3', color: '#a16207', flexShrink: 0 }}>
+                        ACTION REQUIRED
+                      </span>
+                    )}
+                    {event.type === 'milestone' && (
+                      <span style={{ padding: '1px 7px', borderRadius: '999px', fontSize: '10px', fontWeight: '700', background: '#f3e8ff', color: '#7c3aed', flexShrink: 0 }}>
+                        MILESTONE
+                      </span>
+                    )}
+                  </div>
                   <p style={{ fontSize: '12px', color: '#9ca3af' }}>{relativeTime(event.time)}</p>
                 </div>
               </div>

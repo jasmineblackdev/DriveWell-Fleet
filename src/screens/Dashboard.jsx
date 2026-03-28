@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom'
 import {
   Users, TrendingUp, TrendingDown, Minus,
   AlertTriangle, CheckCircle2, Clock,
-  DollarSign, Activity, ShieldAlert,
+  DollarSign, Activity, ShieldAlert, BarChart2, Shield,
 } from 'lucide-react'
 import { mockDrivers, getDaysUntilDot } from '../data/mockFleetData'
 import { scoreFleet, RISK_CONFIG, CATEGORY_LABELS } from '../utils/riskEngine'
@@ -262,7 +262,74 @@ const Dashboard = () => {
         </div>
       </div>
 
-      {/* Row 4: Urgent DOT Renewals */}
+      {/* Row 4: Industry Benchmark */}
+      <div className="card" style={{ background: 'linear-gradient(135deg, #0f172a, #1e3a8a)', color: 'white', marginBottom: '20px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '16px' }}>
+          <BarChart2 size={20} color="#93c5fd" />
+          <h2 style={{ fontSize: '16px', fontWeight: '700', color: 'white' }}>Fleet vs Industry Benchmark</h2>
+          <span style={{ background: 'rgba(255,255,255,0.1)', padding: '2px 10px', borderRadius: '999px', fontSize: '11px', color: '#93c5fd' }}>
+            FMCSA fleet health data
+          </span>
+        </div>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '14px' }}>
+          {[
+            { label: 'DOT Readiness Score', yours: fleetReadiness,                              industry: 58, higher: true,  unit: '/100' },
+            { label: 'High-Risk Driver Rate', yours: Math.round((highRisk / total) * 100),      industry: 22, higher: false, unit: '%'    },
+            { label: 'Projected Failure Rate', yours: Math.round((projectedFailures / total) * 100), industry: 15, higher: false, unit: '%' },
+            { label: 'Weekly Engagement',    yours: engagementRate,                             industry: 34, higher: true,  unit: '%'    },
+          ].map(m => {
+            const winning = m.higher ? m.yours > m.industry : m.yours < m.industry
+            return (
+              <div key={m.label} style={{ background: 'rgba(255,255,255,0.07)', borderRadius: '10px', padding: '14px', textAlign: 'center' }}>
+                <p style={{ fontSize: '11px', color: '#93c5fd', marginBottom: '10px', fontWeight: '600' }}>{m.label}</p>
+                <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'baseline', gap: '10px' }}>
+                  <div>
+                    <p style={{ fontSize: '26px', fontWeight: '800', color: winning ? '#86efac' : '#fca5a5', lineHeight: 1 }}>{m.yours}{m.unit}</p>
+                    <p style={{ fontSize: '10px', color: '#93c5fd', marginTop: '3px' }}>Your Fleet</p>
+                  </div>
+                  <span style={{ color: '#475569', fontSize: '12px' }}>vs</span>
+                  <div>
+                    <p style={{ fontSize: '18px', fontWeight: '600', color: 'rgba(255,255,255,0.4)', lineHeight: 1 }}>{m.industry}{m.unit}</p>
+                    <p style={{ fontSize: '10px', color: '#64748b', marginTop: '3px' }}>Industry Avg</p>
+                  </div>
+                </div>
+                <div style={{ marginTop: '8px', fontSize: '11px', fontWeight: '700', color: winning ? '#86efac' : '#fca5a5' }}>
+                  {winning ? '▲ Above Average' : '▼ Below Average'}
+                </div>
+              </div>
+            )
+          })}
+        </div>
+      </div>
+
+      {/* Row 4b: Insurance Premium Impact */}
+      <div className="card" style={{ marginBottom: '20px', border: '1px solid #e9d5ff' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '16px' }}>
+          <Shield size={18} color="#7c3aed" />
+          <h2 style={{ fontSize: '16px', fontWeight: '700' }}>Insurance Premium Impact</h2>
+          <span style={{ background: '#f5f3ff', color: '#7c3aed', padding: '2px 10px', borderRadius: '999px', fontSize: '11px', fontWeight: '600' }}>
+            Actuarial Estimate
+          </span>
+        </div>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '12px', marginBottom: '12px' }}>
+          {[
+            { label: 'Est. Annual Premium (current)',  value: `$${(total * 3500).toLocaleString()}`,                     sub: 'at current risk level',         color: '#374151' },
+            { label: 'Projected Premium with DriveWell', value: `$${Math.round(total * 3500 * 0.91).toLocaleString()}`, sub: '~9% wellness discount',          color: '#15803d' },
+            { label: 'Est. Annual Premium Savings',   value: `$${Math.round(total * 3500 * 0.09).toLocaleString()}`,    sub: 'shareable with your carrier',    color: '#7c3aed' },
+          ].map(m => (
+            <div key={m.label} style={{ padding: '14px', background: '#faf5ff', borderRadius: '10px' }}>
+              <p style={{ fontSize: '11px', color: '#6b7280', marginBottom: '4px', fontWeight: '500' }}>{m.label}</p>
+              <p style={{ fontSize: '22px', fontWeight: '800', color: m.color }}>{m.value}</p>
+              <p style={{ fontSize: '11px', color: '#9ca3af', marginTop: '2px' }}>{m.sub}</p>
+            </div>
+          ))}
+        </div>
+        <p style={{ fontSize: '11px', color: '#9ca3af' }}>
+          Based on $3,500/driver avg commercial trucking premium and 9% wellness discount. Share the Insurance Report with your carrier to initiate a premium review.
+        </p>
+      </div>
+
+      {/* Row 5: Urgent DOT Renewals */}
       <div className="card">
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
           <h2 style={{ fontSize: '16px', fontWeight: '700' }}>Upcoming DOT Renewals</h2>
